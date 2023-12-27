@@ -1,0 +1,26 @@
+{
+	"id": "wyrestorm-mx-0606-pp",
+	"name": "wyrestorm-mx-0606-pp",
+	"shortname": "mx-0606-pp",
+	"description": "Wyrestorm MX-0606-PP HDMI Matrix",
+	"version": "0.1.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/bitfocus/companion-module-your-module-name.git",
+	"bugs": "https://github.com/bitfocus/companion-module-your-module-name/issues",
+	"maintainers": [
+		{
+			"name": "Matt Bishop",
+			"email": "matt@wycliffe.church"
+		}
+	],
+	"runtime": {
+		"type": "node18",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "Wyrestorm",
+	"products": ["MX-0606-PP"],
+	"keywords": ["matrix"]
+}
