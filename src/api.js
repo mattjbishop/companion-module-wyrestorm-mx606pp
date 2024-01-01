@@ -1,4 +1,5 @@
-const { InstanceStatus, TCPHelper } = require('@companion-module/base')
+const { InstanceStatus, TCPHelper } = require('@companion-module/base');
+const { SOURCE_LOC, DEST_LOC, MX_0606 } = require('./matrix');
 
 module.exports = {
 
@@ -26,25 +27,37 @@ module.exports = {
 				newData = '';
 				
 				// append the new data to the buffer
-				currentData = Buffer.concat([self.messageBuffer.message, data]).toString();
+				currentData = Buffer.concat([self.messageBuffer, data]).toString();
 				
 				messages = currentData.split('\r\n');
 
       			messages.forEach((message) => {
 				
 					if (message.startsWith('s') && message.length === 3) {
-						// routing response
+						// routing response message
 
 						self.log('debug','properly formed routing message found: ' + message);
 
-						// update the destination variable with the current source
-						let sourceValue = message[2];
-						let destination = 'Destination_' + message[1];
-						self.setVariableValues({
-							[destination] : sourceValue
-						});
-						// check feedbacks??
+						let sourceValue = parseInt(message[SOURCE_LOC]);
+						let destinationValue = parseInt(message[DEST_LOC]);
 
+						// Check source and destination are OK, then update variable
+						if (sourceValue !== NaN && 
+							destinationValue !== NaN &&
+							sourceValue > 0 && sourceValue <= MX_0606 &&
+							destinationValue > 0 && destinationValue <= MX_0606) {
+
+							self.routingTable[destinationValue-1] = sourceValue;
+
+							let destination = 'Destination_' + destinationValue;
+							self.setVariableValues({
+								[destination] : sourceValue
+							});
+							
+							self.checkFeedbacks('routing_state');
+						} else {
+							self.log('debug','source or destination not valid ' + message);
+						}
 					} else if (message.length > 0) {
 						// incomplete message
 						newData = newData.concat(message);
@@ -53,7 +66,7 @@ module.exports = {
 				})
 				
 				//update the buffer with data that hasn't been processed
-				self.messageBuffer.message = Buffer.from(newData);
+				self.messageBuffer = Buffer.from(newData);
 			});
         } else {
 			self.updateStatus(InstanceStatus.BadConfig)
@@ -116,7 +129,6 @@ module.exports = {
 	},
 
 	setupInterval: function(self) {
-	
 		if (self.INTERVAL !== null) {
 			clearInterval(self.INTERVAL);
 			self.INTERVAL = null;
@@ -130,24 +142,19 @@ module.exports = {
 	
 		if (self.config.interval > 0) {
 			self.log('info', `Starting Update Interval. Updating every ${self.config.interval}ms`);
-			self.INTERVAL = setInterval(this.getInfo.bind(self), self.config.interval);
+			self.INTERVAL = setInterval(this.pollForInfo.bind(self), self.config.interval);
 		}
 	},
 
-	stopInterval: function() {
+	// This function is a wrapper around getInfo for use in bind() where 'self' is passed in using 'this' 
+	pollForInfo: function() {
 		let self = this;
-	
-		self.log('info', 'Stopping Update Interval.');
-	
-		if (self.INTERVAL) {
-			clearInterval(self.INTERVAL);
-			self.INTERVAL = null;
-		}	
+		module.exports.getInfo(self);
 	},
 
 	getInfo: function(self) {
 		let cmd = 'bc ';
-		//self.log('debug','getting status' + ' command is ' + cmd);
+		self.log('debug','getting status' + ' command is ' + cmd);
 		module.exports.sendCommand(self, cmd);
 	},
 }

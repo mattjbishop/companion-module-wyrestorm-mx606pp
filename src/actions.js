@@ -36,12 +36,5 @@ module.exports = function (self) {
 			},
 		},
 
-		status: {
-			name: 'Get Status',
-			options: [],
-			callback: async (event) => {
-				api.getInfo(self)
-			},
-		},
 	})
 }

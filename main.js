@@ -3,21 +3,21 @@ const UpgradeScripts = require('./src/upgrades')
 const UpdateActions = require('./src/actions')
 const UpdateConfigFields = require('./src/config')
 const UpdateFeedbacks = require('./src/feedbacks')
+const UpdatePresets = require('./src/presets')
 const UpdateVariableDefinitions = require('./src/variables')
 
 const api = require('./src/api')
+const { MX_0606 } = require('./src/matrix')
 
 class ModuleInstance extends InstanceBase {
-	messageBuffer = {
-		dataLength: 0,
-		message: Buffer.from(''),
-	}
+
+	messageBuffer = Buffer.from('')
 
 	constructor(internal) {
 		super(internal)
 
 		this.INTERVAL = null;
-		this.routingTable = [];
+		this.routingTable = new Array(MX_0606);
 	}
 
 	async init(config) {
@@ -46,9 +46,10 @@ class ModuleInstance extends InstanceBase {
 		this.updateActions(); // export actions
 		this.updateFeedbacks(); // export feedbacks
 		this.updateVariableDefinitions(); // export variable definitions
+		this.updatePresets(); // export presets
 
 		this.initTCP();
-		// this.setupInterval();
+		this.setupInterval();
 	}
 
 	// Return config fields for web config
@@ -66,6 +67,10 @@ class ModuleInstance extends InstanceBase {
 
 	updateVariableDefinitions() {
 		UpdateVariableDefinitions(this)
+	}
+
+	updatePresets() {
+		UpdatePresets(this)
 	}
 
 	initTCP() {
