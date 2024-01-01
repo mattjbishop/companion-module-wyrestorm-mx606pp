@@ -10,7 +10,7 @@ const CHANNEL_CHOICES = [
 ]
 
 module.exports = function (self) {
-	self.setActionDefinitions({
+	self.setActionDefinitions({  
 		route: {
 			name: 'Route',
 			options: [
@@ -33,6 +33,14 @@ module.exports = function (self) {
 				let cmd = 'cir ' + event.options.destination + event.options.source;
 				self.log('debug','routing input ' + event.options.source + ' to output ' + event.options.destination + ' command is ' + cmd);
 				api.sendCommand(self, cmd);
+			},
+		},
+
+		status: {
+			name: 'Get Status',
+			options: [],
+			callback: async (event) => {
+				api.getInfo(self)
 			},
 		},
 	})

@@ -8,8 +8,16 @@ const UpdateVariableDefinitions = require('./src/variables')
 const api = require('./src/api')
 
 class ModuleInstance extends InstanceBase {
+	messageBuffer = {
+		dataLength: 0,
+		message: Buffer.from(''),
+	}
+
 	constructor(internal) {
 		super(internal)
+
+		this.INTERVAL = null;
+		this.routingTable = [];
 	}
 
 	async init(config) {
@@ -23,6 +31,11 @@ class ModuleInstance extends InstanceBase {
 		if (this.socket !== undefined) {
 			this.socket.destroy();
 		}
+
+		if (this.INTERVAL) {
+			clearInterval(this.INTERVAL);
+			this.INTERVAL = null;
+		}
 	}
 
 	async configUpdated(config) {
@@ -35,6 +48,7 @@ class ModuleInstance extends InstanceBase {
 		this.updateVariableDefinitions(); // export variable definitions
 
 		this.initTCP();
+		// this.setupInterval();
 	}
 
 	// Return config fields for web config
@@ -56,6 +70,10 @@ class ModuleInstance extends InstanceBase {
 
 	initTCP() {
 		api.initTCP(this)
+	}
+
+	setupInterval() {
+		api.setupInterval(this)
 	}
 }
 

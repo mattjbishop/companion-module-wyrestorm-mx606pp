@@ -22,14 +22,39 @@ module.exports = {
 				self.log('debug',"yes, we are Connected");
 			});
 
-			self.socket.on('data', function (d) {
-				let oldHasData = self.has_data = true;
-				let data = String(d);
-				let msg;
-	
-				// Debug received packet
-				self.log('debug','Packet received: ' + data);
-			})
+			self.socket.on('data', (data) => {
+				newData = '';
+				
+				// append the new data to the buffer
+				currentData = Buffer.concat([self.messageBuffer.message, data]).toString();
+				
+				messages = currentData.split('\r\n');
+
+      			messages.forEach((message) => {
+				
+					if (message.startsWith('s') && message.length === 3) {
+						// routing response
+
+						self.log('debug','properly formed routing message found: ' + message);
+
+						// update the destination variable with the current source
+						let sourceValue = message[2];
+						let destination = 'Destination_' + message[1];
+						self.setVariableValues({
+							[destination] : sourceValue
+						});
+						// check feedbacks??
+
+					} else if (message.length > 0) {
+						// incomplete message
+						newData = newData.concat(message);
+						self.log('debug','partial message found: ' + newData);
+					}
+				})
+				
+				//update the buffer with data that hasn't been processed
+				self.messageBuffer.message = Buffer.from(newData);
+			});
         } else {
 			self.updateStatus(InstanceStatus.BadConfig)
 		}
@@ -88,5 +113,41 @@ module.exports = {
 				module.exports.initTCP(self);
 			}
 		}
-	}
+	},
+
+	setupInterval: function(self) {
+	
+		if (self.INTERVAL !== null) {
+			clearInterval(self.INTERVAL);
+			self.INTERVAL = null;
+		}
+	
+		if (!self.config.interval) {
+			self.config.interval = 0;
+		}
+	
+		self.config.interval = parseInt(self.config.interval);
+	
+		if (self.config.interval > 0) {
+			self.log('info', `Starting Update Interval. Updating every ${self.config.interval}ms`);
+			self.INTERVAL = setInterval(this.getInfo.bind(self), self.config.interval);
+		}
+	},
+
+	stopInterval: function() {
+		let self = this;
+	
+		self.log('info', 'Stopping Update Interval.');
+	
+		if (self.INTERVAL) {
+			clearInterval(self.INTERVAL);
+			self.INTERVAL = null;
+		}	
+	},
+
+	getInfo: function(self) {
+		let cmd = 'bc ';
+		//self.log('debug','getting status' + ' command is ' + cmd);
+		module.exports.sendCommand(self, cmd);
+	},
 }
