@@ -5,8 +5,8 @@
 	"description": "Wyrestorm MX-0606-PP HDMI Matrix",
 	"version": "0.1.0",
 	"license": "MIT",
-	"repository": "git+https://github.com/bitfocus/companion-module-your-module-name.git",
-	"bugs": "https://github.com/bitfocus/companion-module-your-module-name/issues",
+	"repository": "git+https://github.com/mattjbishop/companion-module-wyrestorm-mx606pp.git",
+	"bugs": "https://github.com/mattjbishop/companion-module-wyrestorm-mx606pp/issues",
 	"maintainers": [
 		{
 			"name": "Matt Bishop",
